@@ -1,0 +1,90 @@
+var express = require("express");
+var mongoose = require("mongoose");
+var axios = require("axios");
+var cheerio = require("cheerio");
+const expressHandlebars = require("express-handlebars")
+
+// Require all models
+var db = require("./models");
+
+var PORT = 3000;
+
+// Initialize Express
+var app = express();
+
+// Parse request body as JSON
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+// Make public a static folder
+app.use(express.static("public"));
+
+// Connect to the Mongo DB
+mongoose.connect("mongodb://localhost/news_db",
+  { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('DB Connected!'))
+  .catch(err => {
+    console.log("DB Connection Error:", err.message);
+  });
+
+app.get("/", function (req, res) {
+  res.render("index");
+})
+
+// Routes
+app.get("/articles", function (req, res) {
+
+  db.articles.find({}, function (err, found) {
+    // Log any errors if the server encounters one
+    if (err) {
+      console.log(err);
+    }
+    // Otherwise, send the result of this query to the browser
+    else {
+      res.json(found);
+    }
+  });
+
+});
+
+// A GET route for scraping the Star Tribune website
+app.get("/scrape", function (req, res) {
+  // First, we grab the body of the html with axios
+  axios.get("https://gameinformer.com/").then(function (response) {
+    // Then, we load that into cheerio and save it to $ for a shorthand selector
+    var $ = cheerio.load(response.data);
+
+    // Now, we grab everything with the .article class, and do the following:
+    $(".article-title").each(function (i, element) {
+      // Save an empty result object
+      var result = {};
+
+      // Add the text and href of every link, and save them as properties of the result object
+      result.title = $(this)
+        .children("a")
+        .text();
+      result.link = $(this)
+        .children("a")
+        .attr("href");
+
+      // Create a new Article using the `result` object built from scraping
+      db.articles.create(result)
+        .then(function (dbArticle) {
+          // View the added result in the console
+          console.log(dbArticle);
+        })
+        .catch(function (err) {
+          // If an error occurred, log it
+          console.log(err);
+        });
+    });
+    // Send a message to the client
+    res.send("Scrape Complete");
+  });
+});
+
+app.listen(PORT, function () {
+  console.log("App running on port " + PORT + "!");
+});
+
+
