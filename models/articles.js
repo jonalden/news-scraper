@@ -12,6 +12,10 @@ const articlesSchema = new Schema({
         type: String,
         required: true
     },
+    faved: {
+        type: Boolean,
+        default: 0
+    },
     note: [
         {
         type: Schema.Types.ObjectId,

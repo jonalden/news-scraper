@@ -2,7 +2,7 @@ var express = require("express");
 var mongoose = require("mongoose");
 var axios = require("axios");
 var cheerio = require("cheerio");
-const expressHandlebars = require("express-handlebars")
+const exphbs = require("express-handlebars");
 
 // Require all models
 var db = require("./models");
@@ -19,35 +19,59 @@ app.use(express.json());
 // Make public a static folder
 app.use(express.static("public"));
 
+app.engine('handlebars', exphbs({ defaultLayout: "main" }));
+app.set('view engine', 'handlebars');
+
+var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/news_db";
+
 // Connect to the Mongo DB
-mongoose.connect("mongodb://localhost/news_db",
+mongoose.connect(MONGODB_URI,
   { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('DB Connected!'))
   .catch(err => {
     console.log("DB Connection Error:", err.message);
   });
 
+// Routes
+
 app.get("/", function (req, res) {
-  res.render("index");
+  db.articles.find({}, function (err, data) {
+    if (err) throw err;
+    res.render("index", { articles: data });
+  })
 })
 
-// Routes
-app.get("/articles", function (req, res) {
 
-  db.articles.find({}, function (err, found) {
+app.get("/api/articles", function (req, res) {
+
+  db.articles.find({}, function (err, data) {
     // Log any errors if the server encounters one
     if (err) {
       console.log(err);
     }
     // Otherwise, send the result of this query to the browser
     else {
-      res.json(found);
+      res.json(data);
     }
   });
-
 });
 
-// A GET route for scraping the Star Tribune website
+
+app.get("/faved", function (req, res) {
+  console.log("first")
+
+  db.articles.find({}).then(function (err, data) {
+    console.log("second")
+    
+    if (err) throw err;
+
+    res.render("faved", { articles: data });
+
+  }).catch(res);
+});
+
+
+// A GET route for scraping the Game Informer website
 app.get("/scrape", function (req, res) {
   // First, we grab the body of the html with axios
   axios.get("https://gameinformer.com/").then(function (response) {
