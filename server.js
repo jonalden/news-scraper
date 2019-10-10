@@ -35,8 +35,10 @@ mongoose.connect(MONGODB_URI,
 // Routes
 
 app.get("/", function (req, res) {
-  db.articles.find({}, function (err, data) {
+
+  db.articles.find({"faved":false}).limit(10).exec(function(err, data){
     if (err) throw err;
+    
     res.render("index", { articles: data });
   })
 })
@@ -57,17 +59,14 @@ app.get("/api/articles", function (req, res) {
 });
 
 
-app.get("/faved", function (req, res) {
-  console.log("first")
+app.get("/favorites", function (req, res) {
 
-  db.articles.find({}).then(function (err, data) {
-    console.log("second")
-    
-    if (err) throw err;
+  db.articles.find( {"faved": true} ).then(function (err, data) {
 
     res.render("faved", { articles: data });
 
-  }).catch(res);
+    if(err) throw err;
+  })
 });
 
 
@@ -105,6 +104,18 @@ app.get("/scrape", function (req, res) {
     // Send a message to the client
     res.send("Scrape Complete");
   });
+});
+
+app.post("/articles/save/:id", function(req,res){
+	db.articles.findOneAndUpdate({ "_id": req.params.id}, {"faved": true})
+	.exec(function(err, doc){
+		if(err){
+			console.log(err);
+		}
+		else{
+			res.send(doc);
+		}
+	});
 });
 
 app.listen(PORT, function () {
