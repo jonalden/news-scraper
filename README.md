@@ -6,8 +6,7 @@ https://game-informer-mongo-scraper.herokuapp.com
 
 #### Login Page
 
-![articles](https://drive.google.com/open?id=1xhfcKwUy__L9zwkNtgYA19WsWPyfCSWL)
-
+![articles](https://drive.google.com/uc?export=view&id=1xhfcKwUy__L9zwkNtgYA19WsWPyfCSWL)
 ---
 
 ### What is Game Informer Mongo Scraper?
