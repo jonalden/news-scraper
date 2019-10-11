@@ -36,38 +36,12 @@ mongoose.connect(MONGODB_URI,
 
 app.get("/", function (req, res) {
 
-  db.articles.find({"faved":false}).limit(10).exec(function(err, data){
+  db.articles.find({ "faved": false }).limit(10).exec(function (err, data) {
     if (err) throw err;
-    
+
     res.render("index", { articles: data });
   })
 })
-
-
-app.get("/api/articles", function (req, res) {
-
-  db.articles.find({}, function (err, data) {
-    // Log any errors if the server encounters one
-    if (err) {
-      console.log(err);
-    }
-    // Otherwise, send the result of this query to the browser
-    else {
-      res.json(data);
-    }
-  });
-});
-
-
-app.get("/favorites", function (req, res) {
-
-  db.articles.find( {"faved": true} ).then(function (err, data) {
-
-    res.render("faved", { articles: data });
-
-    if(err) throw err;
-  })
-});
 
 
 // A GET route for scraping the Game Informer website
@@ -106,20 +80,81 @@ app.get("/scrape", function (req, res) {
   });
 });
 
-app.post("/articles/save/:id", function(req,res){
-	db.articles.findOneAndUpdate({ "_id": req.params.id}, {"faved": true})
-	.exec(function(err, doc){
-		if(err){
-			console.log(err);
-		}
-		else{
-			res.send(doc);
-		}
-	});
+
+app.get("/api/articles", function (req, res) {
+
+  db.articles.find({}, function (err, data) {
+    // Log any errors if the server encounters one
+    if (err) {
+      console.log(err);
+    }
+    // Otherwise, send the result of this query to the browser
+    else {
+      res.json(data);
+    }
+  });
 });
+
+
+app.get("/favorites", function (req, res) {
+
+  db.articles.find({ "faved": true }).limit(10).exec(function (err, data) {
+    res.render("faved", { articles: data });
+    if (err) throw err;
+  })
+});
+
+
+app.put("/articles/favorite/:id", function (req, res) {
+
+  db.articles.findOneAndUpdate({ "_id": req.params.id }, { "faved": true })
+    .exec(function (err, doc) {
+      if (err) {
+        console.log(err);
+      }
+      else {
+        res.send(doc);
+      }
+    })
+});
+
+
+app.delete("/articles/delete/:id", function (req, res) {
+
+  db.articles.findOneAndUpdate({ "_id": req.params.id })
+    .exec(function (err, doc) {
+      if (err) {
+        console.log(err);
+      }
+      else {
+        res.send(doc);
+      }
+    })
+});
+
+
+app.delete("/delete", function (req, res) {
+
+  db.articles.deleteMany({}, function (err, data) {
+    if (err) {
+      res.json({ deleted: false })
+    }
+    else {
+      res.json({ deleted: true })
+      console.log("deleted")
+    }
+  })
+});
+
 
 app.listen(PORT, function () {
   console.log("App running on port " + PORT + "!");
 });
+
+
+
+
+
+
 
 
