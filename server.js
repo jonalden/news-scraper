@@ -67,35 +67,30 @@ app.get("/scrape", function (req, res) {
       // Create a new Article using the `result` object built from scraping
       db.articles.create(result)
         .then(function (dbArticle) {
-          // View the added result in the console
           console.log(dbArticle);
         })
         .catch(function (err) {
-          // If an error occurred, log it
           console.log(err);
         });
     });
-    // Send a message to the client
     res.send("Scrape Complete");
   });
 });
 
-
+// an api route to display all stories in JSON
 app.get("/api/articles", function (req, res) {
 
   db.articles.find({}, function (err, data) {
-    // Log any errors if the server encounters one
     if (err) {
       console.log(err);
     }
-    // Otherwise, send the result of this query to the browser
     else {
       res.json(data);
     }
   });
 });
 
-
+// grabbing limit 10 stories from the db
 app.get("/favorites", function (req, res) {
 
   db.articles.find({ "faved": true }).limit(10).exec(function (err, data) {
@@ -104,35 +99,35 @@ app.get("/favorites", function (req, res) {
   })
 });
 
-
+// updating an article to be change the faved field to true, this sends it to the favorites page
 app.put("/articles/favorite/:id", function (req, res) {
 
   db.articles.findOneAndUpdate({ "_id": req.params.id }, { "faved": true })
-    .exec(function (err, doc) {
+    .exec(function (err, data) {
       if (err) {
         console.log(err);
       }
       else {
-        res.send(doc);
-      }
+        res.send(data);
+      } 
     })
 });
 
+// deleting on article out of the favorites page by changing the faved field to false
+app.post("/articles/delete/:id", function (req, res) {
 
-app.delete("/articles/delete/:id", function (req, res) {
-
-  db.articles.findOneAndUpdate({ "_id": req.params.id })
-    .exec(function (err, doc) {
+  db.articles.updateOne({ "_id": req.params.id }, {"faved": false})
+    .exec(function (err, data) {
       if (err) {
         console.log(err);
       }
       else {
-        res.send(doc);
+        res.send(data);
       }
     })
 });
 
-
+// deleting all articles in the root / path
 app.delete("/delete", function (req, res) {
 
   db.articles.deleteMany({}, function (err, data) {

@@ -25,7 +25,6 @@ document.getElementById("clearButton").addEventListener("click", () => {
 
 
 const favButtons = document.getElementsByClassName("favButton");
-console.log(favButtons)
 for (let i = 0; i < favButtons.length; i++) {
 
     favButtons[i].addEventListener("click", function () {
@@ -40,14 +39,13 @@ for (let i = 0; i < favButtons.length; i++) {
     })
 }
 
-const deletefavButtons = document.getElementsByClassName("favButton");
+const deletefavButtons = document.getElementsByClassName("deleteFavButton");
 for (let i = 0; i < deletefavButtons.length; i++) {
 
     deletefavButtons[i].addEventListener("click", function () {
         const articleId = this.dataset.id;
-        console.log(this, articleId);
 
-        axios.delete("/articles/delete/" + articleId).then((response) => {
+        axios.put("/articles/delete/" + articleId).then((response) => {
 
         }).catch((e) => {
             console.log("errroooorrrr", e)
